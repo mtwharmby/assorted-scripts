@@ -1,11 +1,25 @@
 from PIL import Image
 import glob
+import numpy as np
 import os
 
 def chkMkDir(dirName):
 	if not os.path.exists(dirName):
 		os.makedirs(dirName)
 	return
+
+def imgSizeFinder(img, newSize=1280):
+	imgDims = img.size
+	dimMax = max(imgDims)
+
+	if (dimMax <= newSize):
+		width = imgDims[0]
+		height = imgDims[1]
+	else:
+		width = int(np.around((float)imgDims[0]/float(dimMax)*newSize))
+		height = int(np.around((float)imgDims[1]/float(dimMax)*newSize))
+
+	return (width, height)
 
 
 #Do we have a list of files
@@ -24,8 +38,10 @@ if makeThumbs:
 inputFiles = glob.glob("*.jpg")
 
 for jpg in inputFiles:
+	currentImg = None
 	try:
 		currentImg = Image.open(os.path.join(workDir, jpg))
-		currentImg.load()
 	except:
 		print "Problems reading file "+str(currentImg)
+
+	outImgSize = imgSizeFinder(currentImg)
