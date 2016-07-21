@@ -40,19 +40,20 @@ def main(files, template=None):
         dataSets.append(get_data_from_file(fName))
     
     #Merge dataSets into one big dataset with the same shape (0,2048,2048)
-    sumDataSet = np.zeros(dataSets[0].shape)
+    sumDataSet = np.zeros(dataSets[0].shape, dtype=np.int32)
     for dataSet in dataSets:
         sumDataSet = np.add(dataSet, sumDataSet)
     #Create an average dataset by dividing the sumdataset by the number of files
     avsDataSet = sumDataSet/len(files)
     
     #Output the summed data and the averaged data to two HDF files with different names
-    outputFiles = {'Summed' : sumDataSet, 'Averaged' : avsDataSet}
+    outputFiles = {'summed' : sumDataSet, 'averaged' : avsDataSet}
     for key in outputFiles:
         if template == None:
-            output_file_name = key
+            output_file_name = key+".hdf5"
         else:
-            output_file_name = key+template
+            template = str(min(numbers))+"-"+str(max(numbers))+"_"+template
+            output_file_name = key+"_"+template+".hdf5"
         
         output_path = os.path.join(wDir, 'processing')
         if not os.path.exists(output_path):
@@ -146,5 +147,13 @@ for filename in file_list:
         print "ERROR: The file "+str(filename)+" does not exist in "+str(wDir)
         exit(1)
 
+if (template == "") | (template == None):
+    output_template = None
+else:
+    output_template = template.replace("(", "_")
+    output_template = output_template.replace(")", "_")
+    output_template = output_template.replace(".", "p")
+
+
 if __name__=="__main__":
-    main()
+    main(file_list, output_template)
