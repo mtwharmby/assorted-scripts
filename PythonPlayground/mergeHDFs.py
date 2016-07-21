@@ -52,16 +52,18 @@ def main(files, template=None):
         if template == None:
             output_file_name = key+".hdf5"
         else:
-            template = str(min(numbers))+"-"+str(max(numbers))+"_"+template
             output_file_name = key+"_"+template+".hdf5"
         
         output_path = os.path.join(wDir, 'processing')
         if not os.path.exists(output_path):
             os.makedirs(output_path)
         
+        print "Writing "+key.title()+" dataset file..."
         with h5py.File(os.path.join(output_path, output_file_name), 'w') as out_hdf:
             out_hdf.attrs['creator']="mergeHDFs.py"
             out_hdf.attrs['author']="Diamond Light Source Ltd."
+            out_hdf.attrs['comment']=key.title()+" dataset from "+str(len(files))+" HDF files (full names given in input_files attribute)."
+            out_hdf.attrs['input_files']=", ".join(files)
             entry = out_hdf.create_group('entry')
             instrument = entry.create_group('instrument')
             detector = instrument.create_group('detector')
@@ -75,7 +77,7 @@ def main(files, template=None):
             out_hdf.close()
 
 def get_data_from_file(filename):
-    print "FName="+filename
+    print "Reading "+filename+"..."
     with h5py.File(filename, 'r') as dataFile:
         return dataFile['/entry/instrument/detector/data'][()]
 
@@ -124,7 +126,8 @@ if (not filenames_list) | (filenames_list == None): #Empty list or None
         os.chdir(wDir)
         numbers=[]
         for filename_str in glob.glob("*"+str(template)+"*"):
-            numbers.append(re.findall('\d+',filename_str)[0]) #Assumes number we want is the first one in the filename
+            if ("dark" not in filename_str) | ("pristine" not in filename_str):
+                numbers.append(re.findall('\d+',filename_str)[0]) #Assumes number we want is the first one in the filename
         
     if not numbers:
         print "ERROR: file_numbers not given & could not be found!"
@@ -133,6 +136,7 @@ if (not filenames_list) | (filenames_list == None): #Empty list or None
     
     #Make a file_list from the template & numbers
     file_list = []
+    numbers.sort()
     for number in numbers:
         file_list.append(str(number)+"_"+str(template)+".hdf5")
 else:
@@ -153,7 +157,9 @@ else:
     output_template = template.replace("(", "_")
     output_template = output_template.replace(")", "_")
     output_template = output_template.replace(".", "p")
+    output_template = str(min(numbers))+"-"+str(max(numbers))+"_"+output_template
 
 
 if __name__=="__main__":
     main(file_list, output_template)
+    print "\n"
