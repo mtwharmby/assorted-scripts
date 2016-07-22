@@ -126,7 +126,7 @@ if (not filenames_list) | (filenames_list == None): #Empty list or None
         os.chdir(wDir)
         numbers=[]
         for filename_str in glob.glob("*"+str(template)+"*"):
-            if ("dark" not in filename_str) | ("pristine" not in filename_str):
+            if ("dark" not in filename_str) & ("pristine" not in filename_str):
                 numbers.append(re.findall('\d+',filename_str)[0]) #Assumes number we want is the first one in the filename
         
     if not numbers:
