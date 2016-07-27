@@ -79,15 +79,20 @@ def makeLocalParams(defined_prms, nfiles):
 
 
 def writeBat(datafile_names, local_params, batfilename="fishy.bat"):
+    #Check the inp template exists and the number of datafiles equals the number of parameter entries
     assert os.path.exists(os.path.join(".", inp_template+".inp"))
     assert len(datafile_names) == len(local_params)
+    
+    #Determine maximum width of the string form of the number of files
+    i_width = len(str(len(datafile_names)))
+    
     with open(batfilename, "w") as batchFile:
         for i in range(0, len(datafile_names)):
             topas_line=topas_path+" "+os.path.join(".", inp_template)+" \"macro DATAFILE {"+os.path.join(".",data_path, datafile_names[i])+"} macro GENERAL {"+local_params[i]+"}\"\n"
             batchFile.write(topas_line)
         
             if copy_out:
-                copy_out_line = "copy .\\"+inp_template+".out .\\"+output_path+"\\"+inp_template+"_i.out\n"
+                copy_out_line = "copy .\\"+inp_template+".out .\\"+output_path+"\\"+inp_template+"_"+str(i).zfill(i_width)+".out\n"
                 batchFile.write(copy_out_line)
             
             if update_inp:
