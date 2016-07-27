@@ -47,6 +47,7 @@ Structure of local params:
 def makeLocalParams(defined_prms, nfiles):
     prm_list = []
     #Create an array which will be nfiles x nPrms
+    prm_tmpls = []
     prm_array = []
     for key, values in given_prms.iteritems():
         if len(values) == nfiles:
@@ -59,17 +60,20 @@ def makeLocalParams(defined_prms, nfiles):
         #Make sure we have the same number of prm_vals as files
         assert len(prm_vals) == nfiles
         
-        
         #Add the set of prm values into the array
         prm_array.append(prm_vals)
+        prm_tmpls.append("prm "+key+" = ")
+    
+    #Check there are as many prm_templs values as number of prms
+    assert len(prm_tmpls) == len(defined_prms)
         
     for j in range(nfiles):
         prm_entry = ""
-        prm_tmpl = "prm "+key+" = "
         for i in range(len(defined_prms)):
-            prm_entry = prm_entry+" "+prm_tmpl+str(prm_array[i][j])
-        prm_list.append(prm_entry)
+            prm_entry = prm_entry+prm_tmpls[i]+str(prm_array[i][j])+"; "
+        prm_list.append(prm_entry.rstrip(' '))
     
+    #Check there are as many prm sets as the number of entries we're going to populate
     assert len(prm_list) == nfiles
     return prm_list
 
