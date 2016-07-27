@@ -16,7 +16,8 @@ copy .\template_inp.out .\template_inp.inp                                  #Thi
 inp_template="ZIF-4_Template"
 data_path=""
 batch_filename = None
-given_prms = {"p_000" : [0, 69], "t_00" : [0, 69]}
+prm_label = "t_00"
+given_prms = {"p_000" : [0, 69], "t_00" : [100, 169]}
 
 copy_out = True
 update_inp = False
@@ -28,10 +29,7 @@ def main():
     filenames = getDataFileNames()
     prms = makeLocalParams(given_prms, (len(filenames)))
     
-    if batch_filename == None:
-        writeBat(filenames, prms)
-    else:
-        writeBat(filenames, prms, batch_filename)
+    writeBat(filenames, prms, batch_filename, prm_label)
 
 def getDataFileNames():
     assert os.path.exists(data_path)
@@ -55,7 +53,10 @@ def makeLocalParams(defined_prms, nfiles):
         elif len(values) == 2:
             prm_vals = range(values[0], values[1]+1)
         elif len(values) == 3:
-            prm_vals = range(values[0], values[1], values[3])
+            prm_vals = range(values[0], values[1]+1, values[3])
+        else:
+            print "ERROR: Unknown description of prm values."
+            exit(1)
         
         #Make sure we have the same number of prm_vals as files
         assert len(prm_vals) == nfiles
@@ -78,13 +79,27 @@ def makeLocalParams(defined_prms, nfiles):
     return prm_list
 
 
-def writeBat(datafile_names, local_params, batfilename="fishy.bat"):
+def writeBat(datafile_names, local_params, batfilename=None, prm_label=None):
     #Check the inp template exists and the number of datafiles equals the number of parameter entries
     assert os.path.exists(os.path.join(".", inp_template+".inp"))
     assert len(datafile_names) == len(local_params)
     
+    if batfilename == None:
+        batfilename = "sequence.bat"
+    
     #Determine maximum width of the string form of the number of files
-    i_width = len(str(len(datafile_names)))
+    if (prm_label == None) | (not prm_label in given_prms):
+        if (not prm_label in given_prms):
+            print "WARNING: Couldn't find requested prm name for output files"
+        suffix_width = len(str(len(datafile_names)))
+    else:
+        suffix_set = given_prms[prm_label]
+        if (len(suffix_set) != len(datafile_names)):
+            if len(suffix_set) == 2:
+                suffix_set = range(suffix_set[0], suffix_set[1]+1)
+            else:
+                suffix_set = range(suffix_set[0], suffix_set[1]+1, suffix_set[3])
+        suffix_width = len(str(max(suffix_set)))
     
     with open(batfilename, "w") as batchFile:
         for i in range(0, len(datafile_names)):
@@ -92,7 +107,12 @@ def writeBat(datafile_names, local_params, batfilename="fishy.bat"):
             batchFile.write(topas_line)
         
             if copy_out:
-                copy_out_line = "copy .\\"+inp_template+".out .\\"+output_path+"\\"+inp_template+"_"+str(i).zfill(i_width)+".out\n"
+                if prm_label == None:
+                    suffix = str(i)
+                else:
+                    suffix = str(suffix_set[i])
+                
+                copy_out_line = "copy .\\"+inp_template+".out .\\"+output_path+"\\"+inp_template+"_"+suffix.zfill(suffix_width)+".out\n"
                 batchFile.write(copy_out_line)
             
             if update_inp:
@@ -102,7 +122,7 @@ def writeBat(datafile_names, local_params, batfilename="fishy.bat"):
 
 if __name__=="__main__":
     if len(sys.argv) >= 2:
-        sys.argv[1] = batch_filename
+        batch_filename = sys.argv[1]
         
         if len(sys.argv) >= 3:
             if sys.argv[2] == "0":
