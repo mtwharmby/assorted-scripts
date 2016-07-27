@@ -13,8 +13,8 @@ copy .\template_inp.out .\somewhere\new_name_related_to_datafile.out        #Thi
 copy .\template_inp.out .\template_inp.inp                                  #This should be optional
 '''
 
-inp_template="ZIF-4_Template"
-data_path=""
+inp_template="ZIF4Zn_NaCl_SequentialRietTmpl_02"
+data_path="up_spots"
 batch_filename = None
 prm_label = "t_00"
 given_prms = {"p_000" : [0, 69], "t_00" : [100, 169]}
@@ -22,7 +22,7 @@ given_prms = {"p_000" : [0, 69], "t_00" : [100, 169]}
 copy_out = True
 update_inp = False
 
-output_path="out" #Relative to working directory
+output_path="out3_up" #Relative to working directory
 topas_path="c:\\topas-5\\tc"
 
 def main():
@@ -112,7 +112,12 @@ def writeBat(datafile_names, local_params, batfilename=None, prm_label=None):
                 else:
                     suffix = str(suffix_set[i])
                 
-                copy_out_line = "copy .\\"+inp_template+".out .\\"+output_path+"\\"+inp_template+"_"+suffix.zfill(suffix_width)+".out\n"
+                #Create output directory if it doesn't exist already
+                if not os.path.exists(os.path.join(".", output_path)):
+                    print "INFO: Making output directory..."
+                    os.mkdir(os.path.join(".", output_path))
+                
+                copy_out_line = "copy .\\"+inp_template+".out "+os.path.join(".", output_path, inp_template+"_"+suffix.zfill(suffix_width)+".out")+"\n"
                 batchFile.write(copy_out_line)
             
             if update_inp:
