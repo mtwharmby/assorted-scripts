@@ -18,17 +18,18 @@ copy .\template_inp.out .\somewhere\new_name_related_to_datafile.out        #Thi
 copy .\template_inp.out .\template_inp.inp                                  #This should be optional
 '''
 
-inp_template="ZIF4Zn_NaCl_SequentialRietTmpl_10"
+inp_template="ZIF4Zn_NaCl_SequentialRietTmpl_20"
 data_path="up_spots_new"
 prm_label = "mp_000"
 given_prms = {"mp_000" : [68, 69]}
 
-copy_out = False
+copy_out = True
 update_inp = False
-recycle = True
+recycle = False
 edit_next_inp = True
+initial_values = {"REPLACE_WITH_LPA" : 5.638932, "REPLACE_MP" : given_prms["mp_000"][0], "REPLACE_WITH_XOPOS" : 12.0751764 }
 
-output_path="out_up" #Relative to working directory
+output_path="out20_up" #Relative to working directory
 topas_path="c:\\topas-5\\tc"
 
 def main():
@@ -53,16 +54,8 @@ def makeLocalParams(defined_prms, nfiles):
     #Create an array which will be nfiles x nPrms
     prm_tmpls = []
     prm_array = []
-    for key, values in given_prms.iteritems():
-        if len(values) == nfiles:
-            prm_vals = values
-        elif len(values) == 2:
-            prm_vals = range(values[0], values[1]+1)
-        elif len(values) == 3:
-            prm_vals = range(values[0], values[1]+1, values[3])
-        else:
-            print "ERROR: Unknown description of prm values."
-            exit(1)
+    for key in given_prms:
+        prm_vals = _calculate_prm_vals(key, nfiles)
         
         #Make sure we have the same number of prm_vals as files
         assert len(prm_vals) == nfiles
@@ -84,11 +77,27 @@ def makeLocalParams(defined_prms, nfiles):
     assert len(prm_list) == nfiles
     return prm_list
 
+def _calculate_prm_vals(prm_name, nfiles):
+    values = given_prms[prm_name]
+    if len(values) == nfiles:
+        prm_vals = values
+    elif len(values) == 2:
+        prm_vals = range(values[0], values[1]+1)
+    elif len(values) == 3:
+        prm_vals = range(values[0], values[1]+1, values[3])
+    else:
+        print "ERROR: Unknown description of prm values."
+        exit(1)
+    return prm_vals
+
+def get_prm_val(prm_name, nfiles, index):
+    return _calculate_prm_vals(prm_name, nfiles)[index]
+
 
 def run_topas(inp_templt, topas_args):
     inp_path = check_file(inp_templt, "inp")
     try:
-        #Consider piping stdout to a log file
+        #TODO Consider piping stdout to a log file
         print "INFO: Starting TOPAS run..."
         top_proc = subprocess.Popen([topas_path, inp_path, topas_args])
         top_proc.wait()
@@ -149,9 +158,21 @@ def sequential_refinement(datafile_names, local_params, prm_label=None):
         
         return suffix.zfill(suffix_width)
     
+    def inject_initial_values(inp_template):
+        print "INFO: Injecting intial values:\n"+str(initial_values)+"\n"
+        with open(check_file(inp_template+"_Tmpl", "inp")+".inp") as template_inp_file, open(check_file(inp_template, "inp")+".inp", "wb") as real_inp_file:
+            for line in template_inp_file:
+                for key, new_val in initial_values.iteritems():
+                    line = line.replace(key, str(new_val))
+                real_inp_file.write(line)
+    
     #Check the inp template exists and the number of datafiles equals the number of parameter entries
     assert len(datafile_names) == len(local_params)
     
+    #If we're editing using a template, we need to set up the first file
+    if edit_next_inp:
+        inject_initial_values(inp_template)
+        
     for i in range(0, len(datafile_names)):
         #Do the first TOPAS run using the standard args
         datafile = check_file(os.path.join(data_path, datafile_names[i]))
@@ -181,6 +202,9 @@ def sequential_refinement(datafile_names, local_params, prm_label=None):
             shutil.copy(check_out_file(inp_template), os.path.join(".", inp_template+"inp"))
         
         if edit_next_inp:
+            #If we're at the end of the list skip this step
+            if i+1 == len(datafile_names):
+                continue
             edit_values = {}
             
             #Get new LPA value
@@ -191,6 +215,11 @@ def sequential_refinement(datafile_names, local_params, prm_label=None):
             with open(check_file("xo_pos", "txt")+".txt") as xopos_file:
                 xopos = xopos_file.readline()
                 edit_values["REPLACE_WITH_XOPOS"] = xopos.lstrip(" ")
+            #Get the mp value to decide if we need the Xo_Is phase
+            edit_values["REPLACE_MP"] = str(get_prm_val("mp_000", len(datafile_names), i+1))
+            
+            print "\nINFO: Inserting following values:\n"+str(edit_values)+"\n"
+            
             with open(check_file(inp_template+"_Tmpl", "inp")+".inp") as template_inp_file, open(check_file(inp_template, "inp")+".inp", "wb") as real_inp_file:
                 for line in template_inp_file:
                     for key, new_val in edit_values.iteritems():
