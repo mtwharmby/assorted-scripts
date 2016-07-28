@@ -18,18 +18,18 @@ copy .\template_inp.out .\somewhere\new_name_related_to_datafile.out        #Thi
 copy .\template_inp.out .\template_inp.inp                                  #This should be optional
 '''
 
-inp_template="ZIF4Zn_NaCl_SequentialRietTmpl_20"
+inp_template="ZIF4Zn_NaCl_SequentialRietTmpl_21"
 data_path="up_spots_new"
 prm_label = "mp_000"
-given_prms = {"mp_000" : [68, 69]}
+given_prms = {"mp_000" : [0, 69]}
 
 copy_out = True
 update_inp = False
 recycle = False
 edit_next_inp = True
-initial_values = {"REPLACE_WITH_LPA" : 5.638932, "REPLACE_MP" : given_prms["mp_000"][0], "REPLACE_WITH_XOPOS" : 12.0751764 }
+initial_values = {"REPLACE_WITH_LPA" : 5.643366, "REPLACE_MP" : given_prms["mp_000"][0], "REPLACE_WITH_XOPOS" : 12.0753893 }
 
-output_path="out20_up" #Relative to working directory
+output_path="out21_up" #Relative to working directory
 topas_path="c:\\topas-5\\tc"
 
 def main():
