@@ -25,7 +25,8 @@ given_prms = {"mp_000" : [68, 69]}
 
 copy_out = False
 update_inp = False
-recycle = True
+recycle = False
+edit_next_inp = True
 
 output_path="out_up" #Relative to working directory
 topas_path="c:\\topas-5\\tc"
@@ -178,6 +179,24 @@ def sequential_refinement(datafile_names, local_params, prm_label=None):
             
         if update_inp:
             shutil.copy(check_out_file(inp_template), os.path.join(".", inp_template+"inp"))
+        
+        if edit_next_inp:
+            edit_values = {}
+            
+            #Get new LPA value
+            with open(check_file("lpa", "txt")+".txt") as lpa_file:
+                lpa = lpa_file.readline()
+                edit_values["REPLACE_WITH_LPA"] = lpa.lstrip(" ")
+            #Get new Xo position
+            with open(check_file("xo_pos", "txt")+".txt") as xopos_file:
+                xopos = xopos_file.readline()
+                edit_values["REPLACE_WITH_XOPOS"] = xopos.lstrip(" ")
+            with open(check_file(inp_template+"_Tmpl", "inp")+".inp") as inp_template_file, open(check_file(inp_template, "inp")+".inp", "wb") as real_inp_file:
+                for line in inp_template_file:
+                    for key, new_val in edit_values.iteritems():
+                        line = line.replace(key, new_val)
+                    real_inp_file.write(line)
+                    
         
 
 if __name__=="__main__":
