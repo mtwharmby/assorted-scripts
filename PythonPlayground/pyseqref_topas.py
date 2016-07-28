@@ -199,7 +199,7 @@ def sequential_refinement(datafile_names, local_params, prm_label=None):
             recycle_inp_name = inp_template+"_"+suffix
             recycle_inp_name_path = os.path.join(".", recycle_inp_name)
             shutil.copy(check_out_file(inp_template), recycle_inp_name+".inp")
-            run_topas(recycle_inp_name, args, do_errors=False)
+            run_topas(recycle_inp_name, args, do_errors=True)
             shutil.move(recycle_inp_name+".inp", os.path.join(out_dir, recycle_inp_name+".inp"))
             shutil.move(check_out_file(recycle_inp_name), os.path.join(out_dir, recycle_inp_name+".out"))
             
@@ -218,7 +218,7 @@ def sequential_refinement(datafile_names, local_params, prm_label=None):
                 edit_values["REPLACE_WITH_LPA"] = lpa.lstrip(" ")
             #Get new Xo position
             next_mp_val = get_prm_val("mp_000", len(datafile_names), i+1) #This is specific for a membrane pressure cell experiment
-            if next_mp_val > 46:
+            if next_mp_val >= 46:
                 if next_mp_val == 46:
                     edit_values["REPLACE_WITH_XOPOS"] = str(initial_values["REPLACE_WITH_XOPOS"])
                 else:
