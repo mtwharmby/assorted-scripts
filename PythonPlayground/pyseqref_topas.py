@@ -165,7 +165,7 @@ def sequential_refinement(datafile_names, local_params, prm_label=None):
     
     def inject_initial_values(inp_template):
         print "INFO: Injecting intial values:\n"+str(initial_values)+"\n"
-        with open(check_file(inp_template+"_Tmpl", "inp")+".inp") as template_inp_file, open(check_file(inp_template, "inp")+".inp", "wb") as real_inp_file:
+        with open(check_file(inp_template+"_Tmpl", "inp")+".inp") as template_inp_file, open(os.path.join(".", inp_template+".inp"), "wb") as real_inp_file:
             for line in template_inp_file:
                 for key, new_val in initial_values.iteritems():
                     line = line.replace(key, str(new_val))
@@ -199,7 +199,7 @@ def sequential_refinement(datafile_names, local_params, prm_label=None):
             recycle_inp_name = inp_template+"_"+suffix
             recycle_inp_name_path = os.path.join(".", recycle_inp_name)
             shutil.copy(check_out_file(inp_template), recycle_inp_name+".inp")
-            run_topas(recycle_inp_name, args, do_errors=True)
+            run_topas(recycle_inp_name, args, do_errors=False)
             shutil.move(recycle_inp_name+".inp", os.path.join(out_dir, recycle_inp_name+".inp"))
             shutil.move(check_out_file(recycle_inp_name), os.path.join(out_dir, recycle_inp_name+".out"))
             
@@ -217,11 +217,16 @@ def sequential_refinement(datafile_names, local_params, prm_label=None):
                 lpa = lpa_file.readline()
                 edit_values["REPLACE_WITH_LPA"] = lpa.lstrip(" ")
             #Get new Xo position
-            with open(check_file("xo_pos", "txt")+".txt") as xopos_file:
-                xopos = xopos_file.readline()
-                edit_values["REPLACE_WITH_XOPOS"] = xopos.lstrip(" ")
-            #Get the mp value to decide if we need the Xo_Is phase
-            edit_values["REPLACE_MP"] = str(get_prm_val("mp_000", len(datafile_names), i+1))
+            next_mp_val = get_prm_val("mp_000", len(datafile_names), i+1) #This is specific for a membrane pressure cell experiment
+            if next_mp_val > 46:
+                if next_mp_val == 46:
+                    edit_values["REPLACE_WITH_XOPOS"] = str(initial_values["REPLACE_WITH_XOPOS"])
+                else:
+                    with open(check_file("xo_pos", "txt")+".txt") as xopos_file:
+                        xopos = xopos_file.readline()
+                        edit_values["REPLACE_WITH_XOPOS"] = xopos.lstrip(" ")
+            #Get the mp value to allow TOPAS inp to decide if we need the Xo_Is phase
+            edit_values["REPLACE_MP"] = str(next_mp_val)
             
             print "\nINFO: Inserting following values:\n"+str(edit_values)+"\n"
             
