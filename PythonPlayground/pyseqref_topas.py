@@ -25,7 +25,7 @@ given_prms = {"mp_000" : [68, 69]}
 
 copy_out = False
 update_inp = False
-recycle = False
+recycle = True
 edit_next_inp = True
 
 output_path="out_up" #Relative to working directory
@@ -174,8 +174,8 @@ def sequential_refinement(datafile_names, local_params, prm_label=None):
             recycle_inp_name_path = os.path.join(".", recycle_inp_name)
             shutil.copy(check_out_file(inp_template), recycle_inp_name+".inp")
             run_topas(recycle_inp_name, args)
-            shutil.move(recycle_inp_name+".inp", out_dir)
-            shutil.move(check_out_file(recycle_inp_name), out_dir)
+            shutil.move(recycle_inp_name+".inp", os.path.join(out_dir, recycle_inp_name+".inp"))
+            shutil.move(check_out_file(recycle_inp_name), os.path.join(out_dir, recycle_inp_name+".out"))
             
         if update_inp:
             shutil.copy(check_out_file(inp_template), os.path.join(".", inp_template+"inp"))
