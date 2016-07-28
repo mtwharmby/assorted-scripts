@@ -94,9 +94,13 @@ def get_prm_val(prm_name, nfiles, index):
     return _calculate_prm_vals(prm_name, nfiles)[index]
 
 
-def run_topas(inp_templt, topas_args):
+def run_topas(inp_templt, topas_args, do_errors=False):
     inp_path = check_file(inp_templt, "inp")
     try:
+        if do_errors:
+            with open(inp_path+".inp") as inp_file:
+                inp_file.write("do_errors")
+        
         #TODO Consider piping stdout to a log file
         print "INFO: Starting TOPAS run..."
         top_proc = subprocess.Popen([topas_path, inp_path, topas_args])
@@ -194,7 +198,7 @@ def sequential_refinement(datafile_names, local_params, prm_label=None):
             recycle_inp_name = inp_template+"_"+suffix
             recycle_inp_name_path = os.path.join(".", recycle_inp_name)
             shutil.copy(check_out_file(inp_template), recycle_inp_name+".inp")
-            run_topas(recycle_inp_name, args)
+            run_topas(recycle_inp_name, args, do_errors=True)
             shutil.move(recycle_inp_name+".inp", os.path.join(out_dir, recycle_inp_name+".inp"))
             shutil.move(check_out_file(recycle_inp_name), os.path.join(out_dir, recycle_inp_name+".out"))
             
