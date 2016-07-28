@@ -191,8 +191,8 @@ def sequential_refinement(datafile_names, local_params, prm_label=None):
             with open(check_file("xo_pos", "txt")+".txt") as xopos_file:
                 xopos = xopos_file.readline()
                 edit_values["REPLACE_WITH_XOPOS"] = xopos.lstrip(" ")
-            with open(check_file(inp_template+"_Tmpl", "inp")+".inp") as inp_template_file, open(check_file(inp_template, "inp")+".inp", "wb") as real_inp_file:
-                for line in inp_template_file:
+            with open(check_file(inp_template+"_Tmpl", "inp")+".inp") as template_inp_file, open(check_file(inp_template, "inp")+".inp", "wb") as real_inp_file:
+                for line in template_inp_file:
                     for key, new_val in edit_values.iteritems():
                         line = line.replace(key, new_val)
                     real_inp_file.write(line)
