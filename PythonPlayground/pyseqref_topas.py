@@ -25,7 +25,7 @@ given_prms = {"mp_000" : [0, 69]}
 
 copy_out = True
 update_inp = False
-recycle = False
+recycle = True
 edit_next_inp = True
 initial_values = {"REPLACE_WITH_LPA" : 5.643366, "REPLACE_MP" : given_prms["mp_000"][0], "REPLACE_WITH_XOPOS" : 12.0753893 }
 
@@ -98,8 +98,9 @@ def run_topas(inp_templt, topas_args, do_errors=False):
     inp_path = check_file(inp_templt, "inp")
     try:
         if do_errors:
-            with open(inp_path+".inp") as inp_file:
+            with open(inp_path+".inp", "ab") as inp_file:
                 inp_file.write("do_errors")
+            print "INFO: Errors will be calculated"
         
         #TODO Consider piping stdout to a log file
         print "INFO: Starting TOPAS run..."
