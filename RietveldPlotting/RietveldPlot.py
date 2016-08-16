@@ -54,7 +54,7 @@ def main():
     if opts.savefile:
         fileName = opts.savefile
         saveLocation = os.getcwd()
-        outFile = os.path.join(saveLocation, "RietveldPlots", fileName)
+        outFile = os.path.join(saveLocation, fileName)
         plt.savefig(outFile, dpi=600)
         
     else:
