@@ -35,33 +35,35 @@ def main():
         reflns_file_path = opts.reflections
     
     intens = readData(data_file_path)
-    tth = intens[:,0]
-    iObs = intens[:,1]
-    iCalc = intens[:,2]
-    iDiff = intens[:,3]
+    x_tth = intens[:,0]
+    y_obs = intens[:,1]
+    y_calc = intens[:,2]
+    y_diff = intens[:,3]
     
-    hklX = readData(reflns_file_path)
+    x_hkl = readData(reflns_file_path)
     
     fig = plt.figure(figsize=(11,8))
     mainAxes = fig.add_subplot(1,1,1)
     
-    iMax = findArrayMinMax(iObs)[1]
-    iDiffY, hklY = generatePlotDependentData(iObs, iCalc, iDiff, hklX, iMax)
+    
+    
+    y_obs_max = findArrayMinMax(y_obs)[1]
+    iDiffY, hklY = generatePlotDependentData(y_obs, y_calc, y_diff, x_hkl, y_obs_max)
     hklYPos = hklY[0]
-    setupPlot(mainAxes, tth, iObs, iCalc, hklYPos, iMax, label=True)
-    plotData(mainAxes, tth, iObs, iCalc, iDiffY, hklX, hklY)
+    setupPlot(mainAxes, x_tth, y_obs, y_calc, hklYPos, y_obs_max, label=True)
+    plotData(mainAxes, x_tth, y_obs, y_calc, iDiffY, x_hkl, hklY)
     
     insetPos = [0.31, 0.5, 0.59, 0.4]
     insetAxes = fig.add_axes(insetPos)
     
     insetMin = 18
-    minIndex = np.where(tth >= insetMin)[0][0]
-    tthI = tth[minIndex:]
-    iObsI = iObs[minIndex:]
-    iCalcI = iCalc[minIndex:]
-    iDiffI = iDiff[minIndex:]
-    minHKLIndex = np.where(hklX >= insetMin)[0][0]
-    hklXI = hklX[minHKLIndex:]
+    minIndex = np.where(x_tth >= insetMin)[0][0]
+    tthI = x_tth[minIndex:]
+    iObsI = y_obs[minIndex:]
+    iCalcI = y_calc[minIndex:]
+    iDiffI = y_diff[minIndex:]
+    minHKLIndex = np.where(x_hkl >= insetMin)[0][0]
+    hklXI = x_hkl[minHKLIndex:]
     
     iMaxI = findArrayMinMax(iObsI)[1]*1.1
     iDiffYI, hklYI = generatePlotDependentData(iObsI, iCalcI, iDiffI, hklXI, iMaxI)
