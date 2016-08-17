@@ -7,8 +7,11 @@ import os
 def make_plot(figure, riet_data, reflns_data=None, tth_start=0, tth_end=None, inset=False):
     def slice_on_tth(in_array, tth_start, tth_end):
         start_index = np.where(in_array[0] >= tth_start)[0][0]
-        end_index =  np.where(in_array[0] >= tth_end)[0][-1]
-        return in_array[:, start_index:end_index]
+        if tth_end is None:
+            end_index = -1
+        else:
+            end_index =  np.where(in_array[0] >= tth_end)[0][0]
+        return in_array[:,start_index:end_index]
     
     def myFormatter(x, pos):
         return "%.2f" % (x / (10**(scale_factor-1)))
@@ -45,8 +48,9 @@ def make_plot(figure, riet_data, reflns_data=None, tth_start=0, tth_end=None, in
         axes = figure.add_subplot(1,1,1)
     #...x-axis maxima & minima...
     axes.set_xlim(minima[0], maxima[0])
-    axes.get_xaxis().set_major_locator(ticker.MultipleLocator(10))
-    axes.get_xaxis().set_minor_locator(ticker.MultipleLocator(2.5))
+    x_tick_pos = 10**(int(np.floor(np.log10(maxima[0] - minima[0])))) #Range of the x-axis sets the number of ticks
+    axes.get_xaxis().set_major_locator(ticker.MultipleLocator(x_tick_pos))
+    axes.get_xaxis().set_minor_locator(ticker.MultipleLocator(x_tick_pos / 4.0)) #To keep it as a float
     
     #...y-axis maxima & minima...
     axes.set_ylim(min(minima[1:]) - (max(maxima[1:]) * 0.05), max(maxima[1:]) * 1.05)
@@ -58,11 +62,17 @@ def make_plot(figure, riet_data, reflns_data=None, tth_start=0, tth_end=None, in
     axes.get_yaxis().set_major_formatter(ticker.FuncFormatter(myFormatter))
     if int(round(np.log10(max(maxima[1:])))) <= (scale_factor - 1) :
         #When we have an inset with much smaller y-scale
-        axes.get_yaxis().set_major_locator(ticker.MultipleLocator(10**(scale_factor-2)))
-        axes.get_yaxis().set_minor_locator(ticker.MultipleLocator(2.5*10**(scale_factor-3)))
+        y_tick_pos = 10**(scale_factor-2)
+#         axes.get_yaxis().set_major_locator(ticker.MultipleLocator(10**(scale_factor-2)))
+#         axes.get_yaxis().set_minor_locator(ticker.MultipleLocator(2.5*10**(scale_factor-3)))
     else:
-        axes.get_yaxis().set_major_locator(ticker.MultipleLocator(10**(scale_factor-1)))
-        axes.get_yaxis().set_minor_locator(ticker.MultipleLocator(2.5*10**(scale_factor-2)))
+        y_tick_pos = 10**(scale_factor-1)
+#         axes.get_yaxis().set_major_locator(ticker.MultipleLocator(10**(scale_factor-1)))
+#         axes.get_yaxis().set_minor_locator(ticker.MultipleLocator(2.5*10**(scale_factor-2)))
+    
+    axes.get_yaxis().set_major_locator(ticker.MultipleLocator(y_tick_pos))
+    axes.get_yaxis().set_minor_locator(ticker.MultipleLocator(y_tick_pos / 4))
+    
     
     #...and axis labels
     if not inset:
@@ -118,9 +128,10 @@ if __name__ == "__main__":
     
     fig = plt.figure(figsize=(11,8))
     
-    #Make the main plot and store the scale_factor
-    main_scale_factor = make_plot(fig, rietveld_data, reflections_data)
-    make_plot(fig, rietveld_data, reflections_data, tth_start=18, inset=True) 
+#     Make the main plot and store the scale_factor
+#     main_scale_factor = make_plot(fig, rietveld_data, reflections_data)
+#     make_plot(fig, rietveld_data, reflections_data, tth_start=18, inset=True)
+    main_scale_factor = make_plot(fig, rietveld_data, reflections_data, tth_start=18, tth_end=20)
     
     if opts.savefile:
         fileName = opts.savefile
