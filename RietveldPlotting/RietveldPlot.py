@@ -129,9 +129,9 @@ if __name__ == "__main__":
     fig = plt.figure(figsize=(11,8))
     
 #     Make the main plot and store the scale_factor
-#     main_scale_factor = make_plot(fig, rietveld_data, reflections_data)
-#     make_plot(fig, rietveld_data, reflections_data, tth_start=18, inset=True)
-    main_scale_factor = make_plot(fig, rietveld_data, reflections_data, tth_start=18, tth_end=20)
+    main_scale_factor = make_plot(fig, rietveld_data, reflections_data)
+    make_plot(fig, rietveld_data, reflections_data, tth_start=18, inset=True)
+#     main_scale_factor = make_plot(fig, rietveld_data, reflections_data, tth_start=18, tth_end=20)
     
     if opts.savefile:
         fileName = opts.savefile
